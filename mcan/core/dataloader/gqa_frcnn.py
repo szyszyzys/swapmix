@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import json
 import pdb
-from pattern3.text.en import singularize
+from pattern.text.en import singularize
 
 class GQADataset() :
 

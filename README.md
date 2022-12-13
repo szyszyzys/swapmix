@@ -1,77 +1,56 @@
-# SwapMix
+# implementation of SwapMix with MCAN
 
-Implementation of SwapMix approach to measure visual bias for visual question answering([SwapMix: Diagnosing and Regularizing the Over-Reliance on Visual Context in Visual Question Answering, Vipul et al., CVPR22](https://arxiv.org/abs/2204.02285))
+code from https://github.com/vipulgupta1011/swapmix.
 
-![Motivation_new](https://user-images.githubusercontent.com/42180235/162658751-74ab2baf-2133-499c-8433-c44d5a2b4a4b.png)
+Fixed some bugs, added features for further experiments.
 
+Only contains SwapMix implementation on [MCAN](https://github.com/MILVLG/mcan-vqa). 
 
-## Introduction
-We provide a new way to benchmark in a VQA model by perturbing the visual context i.e. irrelevant objects in the image.
+## Dependencies and dataset
+Install the requirements dependencies given by authors of MCAN and provided in the requirement.txt file.
 
-The model looks at an image and a question. Then we change the visual context (irrelevant objects to the question) in the image. For each question we make multiple copies of image by changing context. Ideally, we would expect the model's prediction to remain consistent with context switch.
+Download the questions and annotations provided by MCAN or you can download it from [here](https://drive.google.com/file/d/1wTCRC1wM8pGju_Krd1f1s-Gv38P2ck56/view?usp=sharing) and extract it at <code>data/vqa</code>.
 
-This repository contains code for **measuring bias** using SwapMix and training VQA models using SwapMix as **data augmentation** as described in the paper. Specifically, we have applied SwapMix to [MCAN](https://github.com/MILVLG/mcan-vqa) and [LXMERT](https://github.com/airsplay/lxmert). We use [GQA](https://cs.stanford.edu/people/dorarad/gqa/download.html) dataset for our analysis.
+Download the object features provided by [GQA](https://cs.stanford.edu/people/dorarad/gqa/download.html) and place them at <code>data/obj_features</code>.
 
+## Measuring visual bias
+We measure context reliance on irrelevant objects and attributes. 
 
-## Implementation Details
-The code has been divided into [MCAN](https://github.com/vipulgupta1011/swapmix/tree/master/mcan#readme) and [LXMERT](https://github.com/vipulgupta1011/swapmix/tree/master/lxmert#readme) folders. Inside each folder we provide implementation for 
-1. Measuring visual bias using SwapMix
-2. Finetuning models using SwapMix as data augmentation technique 
-3. Training model with perfect sight.
+For calculating context reliance on irrelevant objects, we swap the object with anotherobject of different class. For example, swapping bus with car. To calculate context reliance on attributes, we swap the irrelevant object with object of same class but with differnt attributes. For example, swapping blue bus with red bias.
 
-
-## Download Dataset
-
-We restructured the format of question, answer, and scene graph files provided by [GQA](https://cs.stanford.edu/people/dorarad/gqa/download.html) a bit. You can download these files along with other files needed for SwapMix implementation from [here](https://drive.google.com/file/d/1Zas1Nag3n-ipvNYW_zSkL7Ipo0ap8aj_/view?usp=sharing) and place it at <code>data/gqa</code> folder.
- 
-We recommend to use object features provided by GQA. Download the features from [GQA](https://cs.stanford.edu/people/dorarad/gqa/download.html)
-
-
-## Download pretrained models
-
-We provide (1) finetuned model (2) model finetuned using SwapMix as data augmentation (3) model trained with perfect sight (4) model trained with perfect sight and using SwapMix as data augmentation technique. Please download the models from here : [MCAN trained models](https://drive.google.com/drive/folders/1PJmj2fnNM-ixoD4v54GEkRl0Uquuc8QT?usp=sharing), [LXMERT trained models](https://drive.google.com/drive/folders/1t0dfYG3A0YvFFvpHXhLEmugpu95Lbl0f?usp=sharing)
-
-
-## Evaluation
-
-We measure visual bias of the model for both irrelevant object changes and attribute changes seperately.
-
-Before benchmarking visual bias for these models, we finetune them on **GQA train dataset** for better performance. Models are evaluated on **GQA val set**.
-
-To measure visual bias for MCAN, download the dependencies and dataset from [here](https://github.com/MILVLG/mcan-vqa) and then run : 
+To measure context reliance based on objects/attribures of a trained model
 ```
-cd mcan
-python3 run_files/run_evaluate.py --CKPT_PATH=<path to ckpt file>
+python3 run_files/run_evaluate.py --CKPT_PATH=<path to ckpt file> --GPU=<gpu id> --OUTPUT_JSON=<output file path> --TYPE <object/attributes>
 ```
 
-To measure context reliance after calculating object and attribute results :
+To measure context reliance based on objects/attribures of a model trained using perfect sight embeddings
 ```
-cd scripts
-python benchmark_frcnn.py --obj <SwapMix object json file>   --attr <SwapMix attribute json file>
-```
-
-## Evaluating new model for visual bias
-SwapMix can be used to measure visual bias on any VQA model.
-
-Changes are needed on data loading and testing part. The current code iterates over each question indiviually to get predictions for all SwapMix perturbations. 
-
-Details for measuring visual bias on a new model can be found [here](https://github.com/vipulgupta1011/swapmix/tree/master/swapmix)
-
-
-## Citation
-If you like our work and find this code useful, consider citing our work :
-```
-@inproceedings{gupta2022swapmix,
-    title={SwapMix: Diagnosing and Regularizing the Over-Reliance on Visual Context in Visual Question Answering},
-    author={Gupta, Vipul and Li, Zhuowan and Kortylewski, Adam and Zhang, Chenyu and Li, Yingwei and Yuille, Alan},
-    booktitle={Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
-    year={2022}
-}
+python3 run_files/run_evaluate.py --CKPT_PATH=<path to ckpt file> --GPU=<gpu id> --OUTPUT_JSON=<output file path> --TYPE <object/attributes> --FEATURES scene_graph
 ```
 
 
-## References
-- [Deep Modular Co-Attention Networks for Visual Question Answering](https://openaccess.thecvf.com/content_CVPR_2019/html/Yu_Deep_Modular_Co-Attention_Networks_for_Visual_Question_Answering_CVPR_2019_paper.html), Zhou et al., CVPR 2019
-- [LXMERT: Learning Cross-Modality Encoder Representations from Transformers](https://aclanthology.org/D19-1514.pdf), Hao et  al., EMNLP 2019
-- [VQA : Visual Question Answering](http://arxiv.org/abs/1505.00468), Antol et al., ICCV15
+## Training using SwapMix
+We also finetune models using SwapMix as data augmentation technique and show that context reliance of the model decreases and effective accuracy increases. Use below commands to train a model using SwapMix.
+
+To finetune a model using SwapMix as data augmentation
+```
+python3 run_files/run_swapmix.py --CKPT_PATH=<pretrained ckpt path> --GPU=<gpu id>
+```
+
+To finetune a model using SwapMix as data augmentation using perfect sight embeddings
+```
+python3 run_files/run_swapmix.py --CKPT_PATH=<pretrained ckpt path> --GPU=<gpu id> --FEATURES='scene_graph'
+```
+
+
+## Finetuning on GQA dataset 
+To finetune the pretrained model provided by authors on GQA dataset. This is done to improve the accuracy of the model on GQA val set.
+```
+python3 run_files/run_train.py --CKPT_PATH=<pretrained ckpt path> --GPU=<gpu id>
+```
+
+To perform training using perfect sight embeddings
+```
+python3 run_files/run_train.py --CKPT_PATH=<pretrained ckpt path> --GPU=<gpu id> --FEATURES='scene_graph'
+```
 

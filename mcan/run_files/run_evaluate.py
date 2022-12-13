@@ -151,7 +151,7 @@ if __name__ == '__main__':
 
     cfg_file = "cfgs/{}_model.yml".format(args.MODEL)
     with open(cfg_file, 'r') as f:
-        yaml_dict = yaml.load(f)
+        yaml_dict = yaml.safe_load(f)
 
     args_dict = {**yaml_dict, **args_dict}
     __C.add_args(args_dict)

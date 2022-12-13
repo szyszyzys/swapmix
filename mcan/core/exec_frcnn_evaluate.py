@@ -368,7 +368,8 @@ class Execution:
                 ques_ix_iter = ques_dict[ques]
                 ques_ix_iter = torch.tensor(ques_ix_iter).to(device).long()
                 ques_ix_iter = torch.unsqueeze(ques_ix_iter,0)
-
+                features = []
+                changes = []
                 if self.__C.TYPE == 'objects' :  
                     if self.__C.ALLOW_RANDOM :
                         features, changes = self.frcnn.get_features_including_random(img, unrelevant_objects)

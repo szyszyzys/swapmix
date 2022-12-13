@@ -10,7 +10,7 @@ class PATH:
     def __init__(self):
 
         # vqav2 dataset root path
-        self.ROOT = '~/swapmix/data/'
+        self.ROOT = '../data/'
         self.DATASET_PATH = self.ROOT + 'vqa/'
 
         # bottom up features root path

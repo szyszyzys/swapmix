@@ -1,7 +1,7 @@
 import h5py
 import json
 import random
-from pattern3.text.en import singularize
+from pattern.text.en import singularize
 import pdb 
 import torch
 from torch import nn
@@ -187,7 +187,7 @@ class FRCNN() :
 
 
 
-    def get_features_irrelevant_attr(self, img, unrelevant_objects) :
+    def get_features_irrelevant_attr(self, img, unrelevant_objects, similarity_method = "cos") :
         info = self.info_file[img]
         idx = info["idx"]
         file_no = info["file"]
@@ -201,7 +201,10 @@ class FRCNN() :
         features.append(original_feature)
         changes.append('original')
 
-        cos = nn.CosineSimilarity(dim=0, eps=1e-6)
+        if similarity_method == "cos":
+            cos = nn.CosineSimilarity(dim=0, eps=1e-6)
+        else:
+            cos = nn.PairwiseDistance()
 
         for name in unrelevant_objects :
             bbox = unrelevant_objects[name]['bbox']
